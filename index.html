@@ -1,1 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>锂电池组参数计算器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:16px}
+.container{max-width:100%;margin:0 auto}
+h1{text-align:center;font-size:22px;margin-bottom:2px;background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;color:#94a3b8;margin-bottom:14px;font-size:12px}
+.flex-row{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+.flex-row>*{flex:1;min-width:260px}
+.card{background:#1e293b;border-radius:10px;padding:12px 14px;border:1px solid #334155}
+.card h2{font-size:13px;margin-bottom:8px;color:#38bdf8;display:flex;align-items:center;gap:6px}
+.s-title{font-size:12px;color:#38bdf8;margin:8px 0 5px;padding-bottom:2px;border-bottom:1px solid #334155;font-weight:600}
+.s-title:first-child{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr 1fr}}
+.form-group label{display:block;font-size:11px;color:#94a3b8;margin-bottom:2px}
+.form-group input,.form-group select{width:100%;padding:6px 8px;background:#0f172a;border:1px solid #334155;border-radius:5px;color:#e2e8f0;font-size:12px}
+.form-group input:focus{outline:none;border-color:#38bdf8}
+.sfx{position:relative}
+.sfx input{padding-right:32px}
+.sfx .tag{position:absolute;right:6px;top:50%;transform:translateY(-50%);color:#64748b;font-size:10px;pointer-events:none}
+.r-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px}
+@media(max-width:900px){.r-grid{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:600px){.r-grid{grid-template-columns:1fr 1fr}}
+.r-item{background:#0f172a;border-radius:6px;padding:6px;text-align:center}
+.r-item .lab{font-size:10px;color:#64748b}
+.r-item .val{font-size:14px;font-weight:600;color:#e2e8f0}
+.r-item .val.bl{color:#38bdf8}
+.r-item .val.gr{color:#34d399}
+.r-item .val.yl{color:#fbbf24}
+.r-item .val.rd{color:#ef4444}
+.r-item .sub{font-size:9px;color:#64748b;margin-top:1px}
+.bvis{display:flex;justify-content:center;align-items:center;gap:3px;padding:8px;background:#0f172a;border-radius:8px;flex-wrap:wrap;margin-bottom:6px}
+.bc{width:24px;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff}
+.bc.s{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.bp{color:#64748b;font-size:12px;margin:0 2px}
+.bg{display:flex;flex-direction:column;align-items:center;gap:2px}
+.tip{padding:8px 10px;background:#0f172a;border-radius:6px;border-left:3px solid #38bdf8;font-size:11px;color:#94a3b8;line-height:1.4;margin-top:6px}
+.tip strong{color:#e2e8f0}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🔋 锂电池组参数计算器</h1>
+<p class="subtitle">单片电芯规格书 → 串并联电池组参数自动计算</p>
 
+<div class="flex-row">
+  <div class="card" style="flex:1.6">
+    <h2>🔬 单片电芯规格</h2>
+    <div class="s-title">📐 尺寸 & 重量</div>
+    <div class="form-grid">
+      <div class="form-group"><label>厚度 (mm)</label><div class="sfx"><input type="number" id="t" value="8" step="0.1"><span class="tag">mm</span></div></div>
+      <div class="form-group"><label>宽度 (mm)</label><div class="sfx"><input type="number" id="w" value="44" step="0.1"><span class="tag">mm</span></div></div>
+      <div class="form-group"><label>长度 (mm)</label><div class="sfx"><input type="number" id="l" value="138" step="0.1"><span class="tag">mm</span></div></div>
+      <div class="form-group"><label>重量 (g)</label><div class="sfx"><input type="number" id="wt" value="180" step="0.5"><span class="tag">g</span></div></div>
+    </div>
+    <div class="s-title">⚡ 电性能</div>
+    <div class="form-grid">
+      <div class="form-group"><label>标称容量 (mAh)</label><div class="sfx"><input type="number" id="cap" value="2200" step="10"><span class="tag">mAh</span></div></div>
+      <div class="form-group"><label>标称电压 (V)</label><input type="number" id="nv" value="3.7" step="0.1"></div>
+      <div class="form-group"><label>充电终止电压 (V)</label><input type="number" id="cv" value="4.2" step="0.05"></div>
+      <div class="form-group"><label>放电终止电压 (V)</label><input type="number" id="dv" value="3.0" step="0.1"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>C 放电倍率</label><div class="sfx"><input type="number" id="cr" value="30" step="1"><span class="tag">C</span></div></div>
+      <div class="form-group"><label>内阻 (mΩ)</label><div class="sfx"><input type="number" id="ir" value="5" step="0.5"><span class="tag">mΩ</span></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔗 电池组配置</h2>
+    <div class="s-title">🔌 串并联</div>
+    <div class="form-grid">
+      <div class="form-group"><label>串联数 (S)</label><select id="S"><option value="1">1S</option><option value="2">2S</option><option value="3" selected>3S</option><option value="4">4S</option><option value="6">6S</option><option value="8">8S</option><option value="12">12S</option><option value="14">14S</option><option value="16">16S</option><option value="20">20S</option><option value="24">24S</option></select></div>
+      <div class="form-group"><label>并联数 (P)</label><select id="P"><option value="1" selected>1P</option><option value="2">2P</option><option value="3">3P</option><option value="4">4P</option><option value="6">6P</option></select></div>
+    </div>
+    <div class="s-title">🔄 循环寿命</div>
+    <div class="form-grid">
+      <div class="form-group"><label>设计循环</label><input type="number" id="dc" value="300" step="50"></div>
+      <div class="form-group"><label>已循环次数</label><input type="number" id="uc" value="0" min="0" step="10"></div>
+      <div class="form-group"><label>容量保持率 (%)</label><div class="sfx"><input type="number" id="ret" value="100" min="0" max="100" step="1"><span class="tag">%</span></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="flex:0.8">
+    <h2>🌡️ 环境参数</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>工作温度 (°C)</label><input type="text" id="wtp" value="-20~60"></div>
+      <div class="form-group"><label>保护温度 (°C)</label><input type="text" id="ptp" value="70"></div>
+      <div class="form-group"><label>储存温度 (°C)</label><input type="text" id="stp" value="-10~45"></div>
+      <div class="form-group"><label>存储湿度 (RH%)</label><input type="text" id="shu" value="45~85%"></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:120px;flex:0.3;justify-content:center;align-items:center">
+    <button onclick="resetAll()" style="width:100%;padding:10px;background:linear-gradient(135deg,#ef4444,#f97316);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 重置参数</button>
+    <button onclick="calc()" style="width:100%;padding:10px;background:linear-gradient(135deg,#38bdf8,#818cf8);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📊 刷新计算</button>
+  </div>
+</div>
+
+<div class="flex-row" style="margin-top:10px">
+  <div class="card" style="flex:1">
+    <h2>📋 单片电芯规格书</h2>
+    <div class="r-grid" id="specGrid"></div>
+  </div>
+
+  <div class="card" style="flex:2">
+    <h2>📊 电池组参数</h2>
+    <div class="bvis" id="packVis"></div>
+    <div class="s-title">⚡ 电气参数</div>
+    <div class="r-grid" id="rElec"></div>
+    <div class="s-title">🔋 放电 & 📏 物理</div>
+    <div class="r-grid" id="rDisPhy"></div>
+    <div class="s-title">🔌 充电 & 🔄 循环</div>
+    <div class="r-grid" id="rChgLife"></div>
+    <div class="tip" id="tipMsg"><strong>💡</strong> 输入电芯参数后自动计算</div>
+  </div>
+</div>
+</div>
+
+<script>
+function calc(){
+  const t=+document.getElementById('t').value||0;
+  const wd=+document.getElementById('w').value||0;
+  const ln=+document.getElementById('l').value||0;
+  const wt=+document.getElementById('wt').value||0;
+  const cap=+document.getElementById('cap').value||0;
+  const cr=+document.getElementById('cr').value||0;
+  const nv=+document.getElementById('nv').value||3.7;
+  const cv=+document.getElementById('cv').value||4.2;
+  const dv=+document.getElementById('dv').value||3.0;
+  const ir=+document.getElementById('ir').value||0;
+  const S=+document.getElementById('S').value;
+  const P=+document.getElementById('P').value;
+  const dc=+document.getElementById('dc').value||300;
+  const uc=+document.getElementById('uc').value||0;
+  const ret=+document.getElementById('ret').value||100;
+
+  const gNV=(nv*S).toFixed(1),gFV=(cv*S).toFixed(1),gCV=(dv*S).toFixed(1);
+  const gSV=(3.8*S).toFixed(1);
+  const gCap=cap*P;
+  const gAh=(gCap/1000).toFixed(2);
+  const gWh=(gCap/1000*nv*S).toFixed(1);
+  const gIR=(ir*S/P).toFixed(1);
+  const maxA=(gCap/1000*cr).toFixed(1);
+  const burstA=(maxA*2).toFixed(1);
+  const maxW=(gCap/1000*cv*S*cr).toFixed(0);
+  // 实际尺寸（含工艺余量）
+  const pT=(t*S+2).toFixed(1);           // 厚度=单片厚×S + 2mm（叠层余量）
+  const pW=(wd*P+2).toFixed(1);          // 宽度=单片宽×P + 2mm（并排余量）
+  const pL=(ln+20).toFixed(1);           // 高度=单片高 + 20mm（极耳/保护板余量）
+  const gWt=((wt+20)*S*P).toFixed(0);   // 单片+20g（含包装/保护板）
+  const wh=+gWh,kg=+gWt/1000,volL=+pT*+pW*+pL/1e6;
+  const denWkg=kg>0?(wh/kg).toFixed(1):'-';
+  const denWl=volL>0?(wh/volL).toFixed(1):'-';
+  const stdA=(gCap/1000*0.5).toFixed(1);
+  const fastA=(gCap/1000*1).toFixed(1);
+  const rem=Math.max(0,dc-uc);
+  const up=Math.min(100,Math.round(uc/dc*100));
+  const rp=Math.max(0,Math.round(rem/dc*100));
+  const cw=rem>0?Math.round(rem/3):0;
+  const cl=cw>0?(cw>=52?Math.floor(cw/52)+'年'+Math.round(cw%52)+'周':cw+'周'):'已耗尽';
+  const soh=ret;
+
+  document.getElementById('specGrid').innerHTML=[
+    ['尺寸',t+'×'+wd+'×'+ln+' mm'],['重量',wt+' g'],
+    ['标称容量',cap+' mAh ('+(cap/1000).toFixed(2)+'Ah)'],
+    ['标称电压',nv+'V'],['充电截止',cv+'V'],['放电截止',dv+'V'],
+    ['内阻',ir+' mΩ'],['C倍率',cr+'C'],
+    ['温度',document.getElementById('wtp').value+'°C'],
+    ['存储',document.getElementById('stp').value+'°C / '+document.getElementById('shu').value+'RH']
+  ].map(([k,v])=>'<div class="r-item"><div class="lab">'+k+'</div><div class="val" style="font-size:13px">'+v+'</div></div>').join('');
+
+  document.getElementById('rElec').innerHTML=[
+    ['组标称电压',gNV+'V',nv+'V×'+S+'S','bl'],
+    ['组满电电压',gFV+'V',cv+'V×'+S+'S','gr'],
+    ['放电截止',gCV+'V',dv+'V×'+S+'S','yl'],
+    ['存储电压',gSV+'V','3.8V×'+S+'S','yl'],
+    ['组总容量',gCap+' mAh',cap+'mAh×'+P+'P='+gAh+'Ah',''],
+    ['组能量',gWh+' Wh','电压×容量','bl'],
+  ].map(([k,v,s,c]) => '<div class="r-item"><div class="lab">'+k+'</div><div class="val '+c+'">'+v+'</div><div class="sub">'+s+'</div></div>').join('');
+
+  document.getElementById('rDisPhy').innerHTML=[
+    ['最大持续电流',maxA+'A','容量×C倍率','gr'],
+    ['最大瞬时电流',burstA+'A','2×持续电流','yl'],
+    ['最大功率',maxW+'W','满电×最大电流','bl'],
+    ['组内阻',gIR+' mΩ',ir+'mΩ×'+S+'S÷'+P+'P',''],
+    ['组尺寸',pT+'×'+pW+'×'+pL+' mm','厚×宽×长',''],
+    ['总重量',gWt+' g',(wt+20)+'g(含包装)×'+(S*P)+'片',''],
+    ['能量密度',denWkg+' Wh/kg','重量比','bl'],
+    ['体积能量',denWl+' Wh/L','体积比','bl'],
+  ].map(([k,v,s,c]) => '<div class="r-item"><div class="lab">'+k+'</div><div class="val '+c+'">'+v+'</div><div class="sub">'+s+'</div></div>').join('');
+
+  document.getElementById('rChgLife').innerHTML=[
+    ['标准充电',stdA+'A','0.5C · ~2h','gr'],
+    ['快速充电',fastA+'A','1C · ~1h','yl'],
+    ['最大充电电压',gFV+'V','不得超出','rd'],
+    ['设计寿命',dc+'次','设计循环次数','bl'],
+    ['已消耗',uc+'次','消耗'+up+'%','yl'],
+    ['剩余寿命',rem+'次','剩余'+rp+'%','gr'],
+    ['健康状态',soh+'%',soh>=80?'健康':(soh>=60?'注意':'更换'),soh>=80?'gr':(soh>=60?'yl':'rd')],
+    ['日历寿命',cl,'每周3次',''],
+  ].map(([k,v,s,c]) => '<div class="r-item"><div class="lab">'+k+'</div><div class="val '+c+'">'+v+'</div><div class="sub">'+s+'</div></div>').join('');
+
+  const vis=document.getElementById('packVis');vis.innerHTML='';
+  for(let p=0;p<P;p++){
+    if(p>0){const e=document.createElement('span');e.className='bp';e.textContent='‖';vis.appendChild(e)}
+    const d=document.createElement('div');d.className='bg';
+    for(let s=0;s<S;s++){const c=document.createElement('div');c.className='bc s';c.textContent=(s+1)+'S';d.appendChild(c)}
+    vis.appendChild(d);
+  }
+  let tip='';
+  if(S<=3&&P===1)tip='✈️ 适合 <strong>穿越机/入门航模</strong>。'+S+'S'+P+'P，能量 '+gWh+'Wh';
+  else if(S<=6)tip='🚁 适合 <strong>航拍机/中型无人机</strong>。'+S+'S'+P+'P，能量 '+gWh+'Wh';
+  else tip='🚀 适合 <strong>大型无人机/工业级</strong>。'+S+'S'+P+'P，能量 '+gWh+'Wh';
+  document.getElementById('tipMsg').innerHTML='<strong>💡 分析：</strong> '+tip;
+}
+calc();
+function resetAll(){
+  document.getElementById('t').value=8;document.getElementById('w').value=44;document.getElementById('l').value=138;document.getElementById('wt').value=180;
+  document.getElementById('cap').value=2200;document.getElementById('nv').value=3.7;document.getElementById('cv').value=4.2;document.getElementById('dv').value=3.0;
+  document.getElementById('cr').value=30;document.getElementById('ir').value=5;
+  document.getElementById('S').value=3;document.getElementById('P').value=1;
+  document.getElementById('dc').value=300;document.getElementById('uc').value=0;document.getElementById('ret').value=100;
+  document.getElementById('wtp').value='-20~60';document.getElementById('ptp').value='70';document.getElementById('stp').value='-10~45';document.getElementById('shu').value='45~85%';
+  calc();
+}
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('input',calc);
+  el.addEventListener('change',calc);
+});
+</script>
+</body>
+</html>
